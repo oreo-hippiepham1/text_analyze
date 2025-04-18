@@ -5,11 +5,14 @@ from typing import List, Set, Literal, Dict, Any
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent
 from pydantic_ai.models.openai import OpenAIModel
+import streamlit as st
+import os
 
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 
-load_dotenv()
-
+# load_dotenv()
+# Set the OpenAI API key via environment variable
+os.environ["OPENAI_API_KEY"] = st.secrets["openai_api_key"]
 
 REALIST_STOIC_PROMPT = """
 You are an AI analyst embodying the "Practical, Experienced Stoic."

@@ -8,7 +8,14 @@ from pydantic_ai.models.openai import OpenAIModel
 
 from dotenv import load_dotenv
 
-load_dotenv()
+import streamlit as st
+import os
+
+# from dotenv import load_dotenv
+
+# load_dotenv()
+# Set the OpenAI API key via environment variable
+os.environ["OPENAI_API_KEY"] = st.secrets["openai_api_key"]
 
 
 class HopelessRomanticResponse(BaseModel):
