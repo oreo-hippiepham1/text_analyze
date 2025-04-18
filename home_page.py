@@ -16,6 +16,8 @@ def initialize_state():
         st.session_state.stage = "input"  # Stages: 'input', 'analysis'
     if "background_info" not in st.session_state:
         st.session_state.background_info = ""
+    if "conversation_context" not in st.session_state:
+        st.session_state.conversation_context = ""
     if "conversation" not in st.session_state:
         # Stores list of {'sender': str, 'message': str}
         st.session_state.conversation = []
@@ -98,13 +100,25 @@ def run_analysis_placeholder(background, conversation_list):
     }
 
 
-def run_graph_analysis(background: str, conversation: list) -> dict:
+def run_graph_analysis(
+    background: str, conversation_ctx: str, conversation: list
+) -> dict:
     """
     Compiles the graph and runs it with the provided input.
     Handles the async graph invocation.
     """
     try:
         graph = create_graph()
+        intial_background = f"""
+        Relationship background: {background},
+
+        A snippet of conversation (for more info):
+            Context of convo: {conversation_ctx}
+            Conversation:
+            {
+                '\n'.join([f"{msg['sender']}: {msg['message']}" for msg in conversation])
+            }
+        """
 
         # Prepare the initial state for the graph invocation
         graph_input = GraphMessage(
@@ -135,7 +149,7 @@ def run_graph_analysis(background: str, conversation: list) -> dict:
 # --- Streamlit App UI ---
 
 st.set_page_config(layout="centered")  # Use "wide" if you prefer more space
-st.title("💬 Conversation Analyzer Test UI")
+st.title("🧑‍🤝‍🧑🍷 Relationship Analyzer")
 
 # Initialize state variables
 initialize_state()
@@ -143,19 +157,27 @@ initialize_state()
 # --- Stage 1: Input Collection ---
 if st.session_state.stage == "input":
     st.header("Step 1: Provide Context and Conversation")
-    st.caption("Enter the background details and then add messages one by one.")
+    st.caption(
+        "Enter the background details of your relationship. Refer to yourself in first person, and the other as 'SO'"
+    )
 
     # --- Background Input ---
     st.subheader("Background Information")
     st.session_state.background_info = st.text_area(
         "Enter context about the relationship, the people involved, the situation, etc.",
         value=st.session_state.background_info,
-        height=150,
+        height=175,
         key="bg_info_input",  # Unique key
     )
 
     # --- Conversation Input ---
     st.subheader("Add Conversation Messages")
+    st.session_state.conversation_context = st.text_area(
+        "Add a short text describing the context of the messages here.",
+        value=st.session_state.conversation_context,
+        height=70,
+        key="conv_context_input",  # Unique key
+    )
 
     # Use columns for layout
     col1, col2 = st.columns([1, 3])
@@ -243,6 +265,12 @@ elif st.session_state.stage == "analysis":
             if st.session_state.background_info
             else "_No background provided._"
         )
+        st.markdown("**Conversation Context:**")
+        st.markdown(
+            st.session_state.conversation_context
+            if st.session_state.conversation_context
+            else "_No context provided._"
+        )
         st.markdown("**Conversation Log:**")
         if not st.session_state.conversation:
             st.caption("No messages were added.")
@@ -257,7 +285,9 @@ elif st.session_state.stage == "analysis":
         with st.spinner("🧠 Running analysis... Please wait."):
             # calling the graph
             st.session_state.analysis_results = run_graph_analysis(
-                st.session_state.background_info, st.session_state.conversation
+                st.session_state.background_info,
+                st.session_state.conversation_context,
+                st.session_state.conversation,
             )
         st.success("✅ Analysis Complete!")
         st.rerun()  # Rerun to display results below the button
