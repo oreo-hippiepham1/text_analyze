@@ -149,7 +149,7 @@ def run_graph_analysis(
 # --- Streamlit App UI ---
 
 st.set_page_config(layout="centered")  # Use "wide" if you prefer more space
-st.title("🧑‍🤝‍🧑🍷 Relationship Analyzer")
+st.title("🫂🍷 Relationship Analyzer")
 
 # Initialize state variables
 initialize_state()
